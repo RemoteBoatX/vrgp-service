@@ -1,52 +1,37 @@
 package com.remoteboatx.moc;
 
+import org.java_websocket.client.WebSocketClient;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WebSocketMessageHandler extends TextWebSocketHandler {
 
-    List< BridgeWebSocket> webSocketSessions = Collections.synchronizedList(new ArrayList<>());
+    Map<WebSocketSession, BridgeWebSocket> bridgeWebSockets = new HashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
-        
-        BridgeWebSocket con = new BridgeWebSocket(session, "http://localhost:8081/");
-        webSocketSessions.add(con);
+
+        BridgeWebSocket con = new BridgeWebSocket("ws://host.docker.internal:8081/ws");
+        bridgeWebSockets.put(session, con);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        for(BridgeWebSocket item : webSocketSessions)
-        {
-            if(item.getSession() == session){
-                webSocketSessions.remove(item);
-            }
-        }
+        bridgeWebSockets.remove(session);
     }
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         super.handleMessage(session, message);
-        WebSocketClient client = null;
-        for(BridgeWebSocket item : webSocketSessions)
-        {
-            if(item.getSession() == session){
-                client = item.getClient();
-            }
-        }
-        
+        WebSocketClient client = bridgeWebSockets.get(session).getClient();
+
         String payload = message.getPayload().toString();
         client.send(payload);
     }
