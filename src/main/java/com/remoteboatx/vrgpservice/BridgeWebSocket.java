@@ -19,7 +19,9 @@ public class BridgeWebSocket {
 
             @Override
             public void onOpen(ServerHandshake handshake) {
+
                 System.out.println("opened connection");
+                moc.send("{\"name\": vrgp service , \"message\": hello}"); //sends a message
             }
 
             @Override
@@ -34,7 +36,10 @@ public class BridgeWebSocket {
 
         };
         moc.connect();
+
     }
+
+
 
     public WebSocketClient getClient() {
         return moc;
