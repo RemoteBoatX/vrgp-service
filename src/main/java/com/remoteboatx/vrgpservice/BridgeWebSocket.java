@@ -19,13 +19,12 @@ public class BridgeWebSocket {
 
             @Override
             public void onOpen(ServerHandshake handshake) {
-                System.out.println("opened connection");
-                moc.send("{\"name\": vrgp service , \"message\": hello}"); //sends a message
+                System.out.println("new moc connection");
             }
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                System.out.println("closed connection");
+                System.out.println("closed moc connection");
             }
 
             @Override

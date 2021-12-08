@@ -14,27 +14,29 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
     Map<WebSocketSession, BridgeWebSocket> bridgeWebSockets = new HashMap<>();
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        super.afterConnectionEstablished(session);
-
-        BridgeWebSocket con = new BridgeWebSocket("ws://host.docker.internal:8081/ws");
-        bridgeWebSockets.put(session, con);
+    public void afterConnectionEstablished(WebSocketSession session) {
+        System.out.println("new adapter connection");
+        BridgeWebSocket moc = new BridgeWebSocket("ws://host.docker.internal:8081/ws");
+        bridgeWebSockets.put(session, moc);
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        super.afterConnectionClosed(session, status);
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        System.out.println("closed adapter connection");
         bridgeWebSockets.remove(session);
     }
 
 
     // Messages ADAPTER --> VRGP SERVICE 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        super.handleMessage(session, message);
-        WebSocketClient client = bridgeWebSockets.get(session).getClient();
-
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+        if (!session.isOpen()) {
+            System.out.println("trying to access closed adapter connection");
+            return;
+        }
+        System.out.println("send message to moc");
+        WebSocketClient moc = bridgeWebSockets.get(session).getClient();
         String payload = message.getPayload().toString();
-        client.send(payload);
+        moc.send(payload);
     }
 }
