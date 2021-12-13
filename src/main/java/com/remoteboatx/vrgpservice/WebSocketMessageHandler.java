@@ -30,10 +30,17 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
     // Messages ADAPTER --> VRGP SERVICE 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+
         if (!session.isOpen()) {
             System.out.println("trying to access closed adapter connection");
             return;
         }
+
         System.out.println("send message to moc");
         WebSocketClient moc = bridgeWebSockets.get(session).getClient();
         String payload = message.getPayload().toString();
