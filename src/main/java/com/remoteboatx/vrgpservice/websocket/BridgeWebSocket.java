@@ -1,4 +1,4 @@
-package com.remoteboatx.vrgpservice;
+package com.remoteboatx.vrgpservice.websocket;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
