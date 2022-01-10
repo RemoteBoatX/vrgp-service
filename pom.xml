@@ -38,6 +38,13 @@
             <artifactId>Java-WebSocket</artifactId>
             <version>1.5.2</version>
         </dependency>
+
+		<!-- JSON -->
+		<dependency>
+			<groupId>org.apache.clerezza.ext</groupId>
+			<artifactId>org.json.simple</artifactId>
+			<version>0.4</version>
+		</dependency>
 	</dependencies>
 
 	<build>
