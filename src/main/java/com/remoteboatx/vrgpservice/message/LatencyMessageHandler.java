@@ -1,6 +1,6 @@
 package com.remoteboatx.vrgpservice.message;
 
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -15,9 +15,9 @@ public class LatencyMessageHandler implements VrgpMessageHandler {
     @Override
     public void handleMessage(WebSocketSession mocSession, Object message) {
 
-        if(message instanceof JSONObject) {
+        if(message instanceof JsonNode) {
 
-            JSONObject jsonMessage = (JSONObject) message;
+            JsonNode jsonMessage = (JsonNode) message;
             long now = Calendar.getInstance().getTimeInMillis();
             Long sent = Long.valueOf(String.valueOf(jsonMessage.get("sent")));
 

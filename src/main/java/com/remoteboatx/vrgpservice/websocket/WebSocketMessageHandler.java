@@ -1,20 +1,18 @@
 package com.remoteboatx.vrgpservice.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.remoteboatx.vrgpservice.message.VrgpMessageType;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 
 public class WebSocketMessageHandler extends TextWebSocketHandler {
@@ -42,13 +40,13 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         connections.remove(session);
     }
 
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
 
         switch (connectionTypes.get(session)){
             case MOC:
@@ -69,17 +67,29 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
 
     private void handleMocMessage(WebSocketSession session, TextMessage message){
 
-        JSONObject jsonMessage = (JSONObject) JSONValue.parse(message.getPayload());
+        JsonNode jsonMessage;
+        try {
+            jsonMessage = new ObjectMapper().readTree(message.getPayload());
 
-        for(Object jsonMessageKey: jsonMessage.keySet()){
-
-            String messageKey = (String) jsonMessageKey;  //message type
-            JSONObject messageContent = (JSONObject) jsonMessage.get(messageKey); //message content
-
-            VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-                    .handleMessage(session, messageContent);
-
+        } catch (JsonProcessingException e) {
+            //TODO handle
+            e.printStackTrace();
+            return;
         }
+
+        jsonMessage.fieldNames().forEachRemaining(messageKey -> {
+
+            try {
+                JsonNode messageContent = jsonMessage.get(messageKey); //message content
+
+                VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
+                        .handleMessage(session, messageContent);
+
+            }catch (UnsupportedOperationException e){
+                //TODO handle unsupported messages
+                e.printStackTrace();
+            }
+        });
     }
 
 
@@ -90,9 +100,6 @@ public class WebSocketMessageHandler extends TextWebSocketHandler {
 
 
     public enum ConnectionType{
-        MOC(), ADAPTER();
+        MOC(), ADAPTER()
     }
-
-
-
 }
