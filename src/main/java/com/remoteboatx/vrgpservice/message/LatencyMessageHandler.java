@@ -15,7 +15,7 @@ public class LatencyMessageHandler implements VrgpMessageHandler {
     @Override
     public void handleMessage(WebSocketSession mocSession, Object message) {
 
-        if(message.getClass().equals(JSONObject.class)) {
+        if(message instanceof JSONObject) {
 
             JSONObject jsonMessage = (JSONObject) message;
             long now = Calendar.getInstance().getTimeInMillis();
@@ -24,6 +24,7 @@ public class LatencyMessageHandler implements VrgpMessageHandler {
             System.out.printf("{\"time\": {\"sent\": %d, \"received\": %d}}%n",
                     sent, now);
             try {
+
                 mocSession.sendMessage(new TextMessage(
                         String.format("{\"time\": {\"sent\": %d, \"received\": %d}}",
                                 sent, now)));
