@@ -1,5 +1,7 @@
 package com.remoteboatx.vrgpservice.message;
 
+//Testing
+//TODO move to a separate library shared with the MOC
 /**
  * VRGP message types that can be handled by the MOC, containing the message key and a handler
  * for each message type.

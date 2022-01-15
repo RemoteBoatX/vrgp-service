@@ -18,6 +18,7 @@ public class VrgpServiceApplication {
 
 		//TODO testing only, move to a appropriate place later
 		try {
+			//TODO change to an appropriate address or some application property 
 			new ClientWebSocketMessageHandlerWrapper(new WebSocketMessageHandler(),
 					WebSocketMessageHandler.ConnectionType.MOC,
 					URI.create("ws://host.docker.internal:8080/vessel")); //moc client

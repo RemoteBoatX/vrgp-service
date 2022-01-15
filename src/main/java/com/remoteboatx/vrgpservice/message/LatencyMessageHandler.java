@@ -28,6 +28,7 @@ public class LatencyMessageHandler implements VrgpMessageHandler {
                         String.format("{\"time\": {\"sent\": %d, \"received\": %d}}",
                                 sent, now)));
             } catch (IOException e) {
+                //TODO add handling
                 e.printStackTrace();
             }
 
