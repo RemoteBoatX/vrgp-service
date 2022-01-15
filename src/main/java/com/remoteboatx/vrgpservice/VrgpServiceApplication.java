@@ -1,6 +1,5 @@
 package com.remoteboatx.vrgpservice;
 
-import com.remoteboatx.vrgpservice.websocket.BridgeWebSocket;
 import com.remoteboatx.vrgpservice.websocket.ClientWebSocketMessageHandlerWrapper;
 import com.remoteboatx.vrgpservice.websocket.WebSocketMessageHandler;
 import org.springframework.boot.SpringApplication;
@@ -10,11 +9,11 @@ import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
-public class VrgpserviceApplication {
+public class VrgpServiceApplication {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(VrgpserviceApplication.class, args);
+		SpringApplication.run(VrgpServiceApplication.class, args);
 
 
 		//TODO testing only, move to a appropriate place later
