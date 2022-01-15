@@ -6,6 +6,8 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Wrapper for {@link WebSocketMessageHandler}s to forward method calls from a
@@ -25,11 +27,11 @@ public class ClientWebSocketMessageHandlerWrapper implements WebSocketHandler {
      *
      * @param messageHandler the real message handler.
      * @param connectionType the connection type to be handled by this {@link WebSocketHandler}.
-     * @param uri the server uri for connecting to a websocket
+     * @param mocUri the server uri for connecting a vessel to a moc
      */
     public ClientWebSocketMessageHandlerWrapper(WebSocketMessageHandler messageHandler,
                                                 WebSocketMessageHandler.ConnectionType connectionType,
-                                                URI uri) throws ExecutionException, InterruptedException {
+                                                URI mocUri) throws ExecutionException, InterruptedException {
 
         this.messageHandler = messageHandler;
         this.connectionType = connectionType;
@@ -37,9 +39,16 @@ public class ClientWebSocketMessageHandlerWrapper implements WebSocketHandler {
 
         //Creates a client websocket
         WebSocketClient client = new StandardWebSocketClient();
-        WebSocketSession clientSession = client.doHandshake(messageHandler, new WebSocketHttpHeaders(),
-                uri).get();
-        messageHandler.addSession(clientSession, connectionType);
+        WebSocketSession clientSession;
+        try {
+            clientSession = client.doHandshake(messageHandler, new WebSocketHttpHeaders(),
+                    mocUri).get(3, TimeUnit.MINUTES);
+            messageHandler.addSession(clientSession, connectionType);
+        } catch (TimeoutException e) {
+            //TODO handle if connection cannot be established
+            e.printStackTrace();
+        }
+
     }
 
     @Override
