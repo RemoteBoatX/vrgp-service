@@ -1,7 +1,7 @@
 package com.remoteboatx.vrgpservice;
 
-import com.remoteboatx.vrgpservice.websocket.ClientWebSocketMessageHandlerWrapper;
-import com.remoteboatx.vrgpservice.websocket.WebSocketMessageHandler;
+import com.remoteboatx.vrgpservice.websocket.MocWebSocketMessageHandler;
+import com.remoteboatx.vrgpservice.websocket.WebSocketClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -18,9 +18,8 @@ public class VrgpServiceApplication {
 
 		//TODO testing only, move to a appropriate place later
 		try {
-			//TODO change to an appropriate address or some application property 
-			new ClientWebSocketMessageHandlerWrapper(new WebSocketMessageHandler(),
-					WebSocketMessageHandler.ConnectionType.MOC,
+			//TODO change to an appropriate address or some application property
+			new WebSocketClient(new MocWebSocketMessageHandler(),
 					URI.create("ws://host.docker.internal:8080/vessel")); //moc client
 		} catch (ExecutionException | InterruptedException e) {
 			e.printStackTrace();
