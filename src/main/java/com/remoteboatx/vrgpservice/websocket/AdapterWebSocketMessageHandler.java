@@ -3,6 +3,7 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.remoteboatx.vrgpservice.VrgpState;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -23,6 +24,9 @@ public class AdapterWebSocketMessageHandler extends WebSocketMessageHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         super.afterConnectionEstablished(session);
+
+        VrgpState.getInstance().setAdapterSession(session);
+
         System.out.println("Adapter connected");
     }
 
@@ -46,6 +50,8 @@ public class AdapterWebSocketMessageHandler extends WebSocketMessageHandler {
                 //TODO this is testing, change to a connect handler method
                 if(messageKey.equals("connect")){
 
+
+                    //TODO check for vessel info
                     //connect to moc
                     try {
                         //TODO change to a dynamic way of retrieving the moc URI

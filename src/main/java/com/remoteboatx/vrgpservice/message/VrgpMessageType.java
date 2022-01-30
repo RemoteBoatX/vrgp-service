@@ -2,6 +2,11 @@ package com.remoteboatx.vrgpservice.message;
 
 //Testing
 //TODO move to a separate library shared with the MOC
+
+import com.remoteboatx.vrgpservice.message.handlers.LatencyMessageHandler;
+import com.remoteboatx.vrgpservice.message.handlers.VesselInfoMessageHandler;
+import com.remoteboatx.vrgpservice.message.handlers.VrgpMessageHandler;
+
 /**
  * VRGP message types that can be handled by the MOC, containing the message key and a handler
  * for each message type.
@@ -12,7 +17,7 @@ public enum VrgpMessageType {
 
     STREAMS("streams", null),
 
-    VESSEL_INFO("vessel", null),
+    VESSEL_INFO("vessel", new VesselInfoMessageHandler()),
 
     NMEA("nmea", null),
 
