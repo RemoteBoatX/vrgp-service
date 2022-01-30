@@ -1,4 +1,4 @@
-package com.remoteboatx.vrgpservice.message;
+package com.remoteboatx.vrgpservice.message.handlers;
 
 import org.springframework.web.socket.WebSocketSession;
 
