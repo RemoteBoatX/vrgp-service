@@ -3,7 +3,6 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.message.VrgpMessageType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -38,6 +37,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         JsonNode jsonMessage;
         try {
             jsonMessage = new ObjectMapper().readTree(message.getPayload());
+            handleJsonMessage(session, jsonMessage);
+
 
         } catch (JsonProcessingException e) {
             //TODO handle
@@ -45,32 +46,7 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
             return;
         }
 
-        jsonMessage.fieldNames().forEachRemaining(messageKey -> {
 
-            try {
-                JsonNode messageContent = jsonMessage.get(messageKey); //message content
-
-                //TODO this is testing, change to a connect handler method
-                if(messageKey.equals("connect")){
-
-                    //connect to moc
-                    try {
-                        //TODO change to a dynamic way of retrieving the moc URI
-                        WebSocketClient moc =  new WebSocketClient(handler.getMocWebSocketMessageHandler(),
-                               URI.create("ws://host.docker.internal:8080/vessel"));
-                        handler.addSession(new VrgpWebSocketSession(VrgpWebSocketSession.SessionType.MOC,
-                                moc.getSession()));
-
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }catch (UnsupportedOperationException e){
-                //TODO handle unsupported messages
-                e.printStackTrace();
-            }
-        });
     }
 
     public void handleJsonMessage(WebSocketSession session, JsonNode message){
@@ -80,8 +56,25 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
             try {
                 JsonNode messageContent =  message.get(messageKey); //message content
 
-                VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-                        .handleMessage(session, messageContent);
+
+                System.out.println(messageKey + ": " + messageContent);
+                //TODO this is testing, change to a connect handler method
+                if(messageKey.equals("connect")){
+
+                    //connect to moc
+                    try {
+                        //TODO change to a dynamic way of retrieving the moc URI
+                        WebSocketClient moc =  new WebSocketClient(handler.getMocWebSocketMessageHandler(),
+                                URI.create("ws://host.docker.internal:8080/vessel"));
+                        handler.addSession(new VrgpWebSocketSession(VrgpWebSocketSession.SessionType.MOC,
+                                moc.getSession()));
+
+                    } catch (ExecutionException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+//                VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
+//                        .handleMessage(session, messageContent);
 
             }catch (UnsupportedOperationException e){
                 //TODO handle unsupported messages
