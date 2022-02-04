@@ -15,7 +15,6 @@ public class VrgpServiceApplication {
 
 		SpringApplication.run(VrgpServiceApplication.class, args);
 
-
 		//TODO testing only, move to a appropriate place later
 		try {
 			//TODO change to an appropriate address or some application property

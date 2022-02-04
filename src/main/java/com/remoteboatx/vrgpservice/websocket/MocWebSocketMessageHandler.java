@@ -4,15 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.remoteboatx.vrgpservice.message.VrgpMessageType;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 
 /**
  * WebSocket message handler for handling VRGP messages from the MOC
  */
-public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
-
+public class MocWebSocketMessageHandler extends TextWebSocketHandler {
 
     public MocWebSocketMessageHandler() {
 
@@ -20,12 +21,17 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
-        super.afterConnectionEstablished(session);
         System.out.println("Moc connected");
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus)  {
+
+    }
+
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
         JsonNode jsonMessage;
         try {
@@ -37,10 +43,15 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
             return;
         }
 
-        jsonMessage.fieldNames().forEachRemaining(messageKey -> {
+        handleJsonMessage(session, jsonMessage);
+    }
+
+    public void handleJsonMessage(WebSocketSession session, JsonNode message){
+
+        message.fieldNames().forEachRemaining(messageKey -> {
 
             try {
-                JsonNode messageContent = jsonMessage.get(messageKey); //message content
+                JsonNode messageContent =  message.get(messageKey); //message content
 
                 VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
                         .handleMessage(session, messageContent);
@@ -51,4 +62,5 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
             }
         });
     }
+
 }

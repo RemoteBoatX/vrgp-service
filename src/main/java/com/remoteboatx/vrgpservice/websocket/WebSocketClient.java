@@ -3,6 +3,7 @@ package com.remoteboatx.vrgpservice.websocket;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
@@ -15,9 +16,9 @@ import java.util.concurrent.TimeoutException;
  */
 public class WebSocketClient {
 
-    private WebSocketSession clientSession;
+    private WebSocketSession session;
 
-    public WebSocketClient(WebSocketMessageHandler messageHandler,
+    public WebSocketClient(TextWebSocketHandler messageHandler,
                            URI mocUri) throws ExecutionException, InterruptedException {
 
 
@@ -25,11 +26,15 @@ public class WebSocketClient {
         org.springframework.web.socket.client.WebSocketClient client = new StandardWebSocketClient();
 
         try {
-            clientSession = client.doHandshake(messageHandler, new WebSocketHttpHeaders(),
+            this.session = client.doHandshake(messageHandler, new WebSocketHttpHeaders(),
                     mocUri).get(3, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
             //TODO handle if connection cannot be established
             e.printStackTrace();
         }
+    }
+
+    public WebSocketSession getSession() {
+        return session;
     }
 }
