@@ -3,6 +3,7 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.remoteboatx.vrgpservice.message.VrgpMessageType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -72,9 +73,11 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
                     } catch (ExecutionException | InterruptedException e) {
                         e.printStackTrace();
                     }
+                }else{
+                        VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
+                        .handleMessage(session, messageContent);
                 }
-//                VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-//                        .handleMessage(session, messageContent);
+
 
             }catch (UnsupportedOperationException e){
                 //TODO handle unsupported messages
