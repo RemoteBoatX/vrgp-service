@@ -3,11 +3,14 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.remoteboatx.vrgpservice.VrgpState;
 import com.remoteboatx.vrgpservice.message.VrgpMessageType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import java.io.IOException;
 
 
 /**
@@ -15,8 +18,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
  */
 public class MocWebSocketMessageHandler extends TextWebSocketHandler {
 
-    public MocWebSocketMessageHandler() {
-
+    VrgpWebsocketMessageHandler handler;
+    public MocWebSocketMessageHandler(VrgpWebsocketMessageHandler handler) {
+        this.handler = handler;
     }
 
     @Override
@@ -26,12 +30,32 @@ public class MocWebSocketMessageHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus)  {
+        System.out.println("moc disconnected");
+
+        VrgpWebSocketSession adapterSession = handler.getSession(VrgpState.getInstance().getAdapterSessionId());
+
+        if(adapterSession != null){
+
+            try {
+                String mocUrl = adapterSession.getUri().toString() ;
+                System.out.println("moc url: " + mocUrl);
+
+                adapterSession.getSession().sendMessage(new TextMessage(String.format("{\"bye\": %s}", mocUrl)));
+                System.out.printf("{\"bye\": %s}", mocUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else{
+            //TODO handle
+            System.out.println("Adapter not found");
+        }
 
     }
 
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
 
         JsonNode jsonMessage;
         try {

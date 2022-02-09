@@ -2,14 +2,18 @@ package com.remoteboatx.vrgpservice.websocket;
 
 import org.springframework.web.socket.WebSocketSession;
 
+import java.net.URI;
+
 public class VrgpWebSocketSession {
 
-    private SessionType type;
-    private WebSocketSession session;
+    private final SessionType type;
+    private final WebSocketSession session;
+    private URI uri;
 
-    public VrgpWebSocketSession(SessionType type, WebSocketSession session) {
+    public VrgpWebSocketSession(SessionType type, WebSocketSession session, URI uri) {
         this.type = type;
         this.session = session;
+        this.uri = uri;
     }
 
     public SessionType getType() {
@@ -18,6 +22,10 @@ public class VrgpWebSocketSession {
 
     public WebSocketSession getSession() {
         return session;
+    }
+
+    public URI getUri() {
+        return uri;
     }
 
     public enum SessionType{

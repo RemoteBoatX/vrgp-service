@@ -3,14 +3,14 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.remoteboatx.vrgpservice.VrgpState;
+import com.remoteboatx.vrgpservice.message.AdapterMessageType;
 import com.remoteboatx.vrgpservice.message.VrgpMessageType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -25,11 +25,13 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
+
         System.out.println("Adapter connected");
+        VrgpState.getInstance().setAdapterSessionId(session.getId());
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus){
 
     }
 
@@ -60,22 +62,16 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
                 System.out.println(messageKey + ": " + messageContent);
                 //TODO this is testing, change to a connect handler method
-                if(messageKey.equals("connect")){
 
-                    //connect to moc
-                    try {
-                        //TODO change to a dynamic way of retrieving the moc URI
-                        WebSocketClient moc =  new WebSocketClient(handler.getMocWebSocketMessageHandler(),
-                                URI.create("ws://host.docker.internal:8080/vessel"));
-                        handler.addSession(new VrgpWebSocketSession(VrgpWebSocketSession.SessionType.MOC,
-                                moc.getSession()));
 
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                //checks if its an adapter message
+                if(AdapterMessageType.contains(messageKey)){
+
+                    AdapterMessageType.getByMessageKey(messageKey).getMessageHandler()
+                            .handleMessage(session, messageContent);
                 }else{
-                        VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-                        .handleMessage(session, messageContent);
+                    VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
+                            .handleMessage(session, messageContent);
                 }
 
 
