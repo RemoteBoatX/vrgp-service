@@ -1,5 +1,6 @@
 package com.remoteboatx.vrgpservice;
 
+import com.remoteboatx.vrgpservice.models.Vessel;
 import com.remoteboatx.vrgpservice.websocket.VrgpWebsocketMessageHandler;
 
 public class VrgpState {

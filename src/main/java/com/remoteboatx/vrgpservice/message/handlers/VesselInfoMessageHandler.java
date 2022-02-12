@@ -2,8 +2,8 @@ package com.remoteboatx.vrgpservice.message.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.Vessel;
 import com.remoteboatx.vrgpservice.VrgpState;
+import com.remoteboatx.vrgpservice.models.Vessel;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;

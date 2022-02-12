@@ -2,7 +2,7 @@ package com.remoteboatx.vrgpservice.message;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.remoteboatx.vrgpservice.Vessel;
+import com.remoteboatx.vrgpservice.models.Vessel;
 
 
 public class VesselInfoMessage {

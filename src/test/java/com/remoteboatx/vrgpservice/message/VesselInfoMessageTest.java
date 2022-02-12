@@ -2,7 +2,7 @@ package com.remoteboatx.vrgpservice.message;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.Vessel;
+import com.remoteboatx.vrgpservice.models.Vessel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

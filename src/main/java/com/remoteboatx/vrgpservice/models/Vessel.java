@@ -1,9 +1,8 @@
-package com.remoteboatx.vrgpservice;
+package com.remoteboatx.vrgpservice.models;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.message.VesselInfoMessage;
 
 /**
  * Vessel model
@@ -122,15 +121,15 @@ public class Vessel {
             System.out.println(v.getFromAbove());
 
 
-            VesselInfoMessage infoMessage = new VesselInfoMessage(v);
-
-            try {
-                String json = new ObjectMapper().writeValueAsString(infoMessage);
-                System.out.println(json);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-
+//            VesselInfoMessage infoMessage = new VesselInfoMessage(v);
+//
+//            try {
+//                String json = new ObjectMapper().writeValueAsString(infoMessage);
+//                System.out.println(json);
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//            }
+//
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
