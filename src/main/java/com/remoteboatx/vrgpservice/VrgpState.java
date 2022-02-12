@@ -1,36 +1,43 @@
 package com.remoteboatx.vrgpservice;
 
-
-import org.springframework.web.socket.WebSocketSession;
-
+import com.remoteboatx.vrgpservice.websocket.VrgpWebsocketMessageHandler;
 
 public class VrgpState {
 
-    private static final VrgpState INSTANCE = new VrgpState();
+    private static VrgpState instance = null;
+
+    private VrgpWebsocketMessageHandler vrgpWebsocketMessageHandler;
+    private String adapterSessionId;
     private Vessel vessel;
-    private WebSocketSession adapterSession;
 
-
-    public VrgpState() {
+    private VrgpState() {
+        vrgpWebsocketMessageHandler = new VrgpWebsocketMessageHandler();
     }
 
-    public WebSocketSession getAdapterSession() {
-        return adapterSession;
+    public static VrgpState getInstance() {
+        if(instance == null)
+            instance = new VrgpState();
+        return instance;
     }
 
-    public void setAdapterSession(WebSocketSession adapterSession) {
-        this.adapterSession = adapterSession;
+    public void setAdapterSessionId(String adapterSessionId) {
+        this.adapterSessionId = adapterSessionId;
     }
 
-    public void setVessel(Vessel info){
-        this.vessel = info;
+    public String getAdapterSessionId() {
+        return adapterSessionId;
     }
+
+    public VrgpWebsocketMessageHandler getVrgpWebsocketMessageHandler() {
+        return vrgpWebsocketMessageHandler;
+    }
+
+
+    public void setVessel(Vessel vessel) {
+        this.vessel = vessel;
+    }
+
     public Vessel getVessel() {
         return vessel;
-    }
-
-    public static VrgpState getInstance(){
-
-        return INSTANCE;
     }
 }

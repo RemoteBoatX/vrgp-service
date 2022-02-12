@@ -7,8 +7,10 @@ import com.remoteboatx.vrgpservice.Vessel;
 import com.remoteboatx.vrgpservice.VrgpState;
 import com.remoteboatx.vrgpservice.message.VesselInfoMessage;
 import com.remoteboatx.vrgpservice.message.VrgpMessageType;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 
@@ -16,16 +18,15 @@ import java.io.IOException;
 /**
  * WebSocket message handler for handling VRGP messages from the MOC
  */
-public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
+public class MocWebSocketMessageHandler extends TextWebSocketHandler {
 
-
-    public MocWebSocketMessageHandler() {
-
+    VrgpWebsocketMessageHandler handler;
+    public MocWebSocketMessageHandler(VrgpWebsocketMessageHandler handler) {
+        this.handler = handler;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
-        super.afterConnectionEstablished(session);
         System.out.println("Moc connected");
 
         // ask to authenticate else send vessel info
@@ -58,7 +59,33 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus)  {
+        System.out.println("moc disconnected");
+
+        VrgpWebSocketSession adapterSession = handler.getSession(VrgpState.getInstance().getAdapterSessionId());
+
+        if(adapterSession != null){
+
+            try {
+                String mocUrl = adapterSession.getUri().toString() ;
+                System.out.println("moc url: " + mocUrl);
+
+                adapterSession.getSession().sendMessage(new TextMessage(String.format("{\"bye\": %s}", mocUrl)));
+                System.out.printf("{\"bye\": %s}", mocUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else{
+            //TODO handle
+            System.out.println("Adapter not found");
+        }
+
+    }
+
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
 
         JsonNode jsonMessage;
         try {
@@ -70,10 +97,15 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
             return;
         }
 
-        jsonMessage.fieldNames().forEachRemaining(messageKey -> {
+        handleJsonMessage(session, jsonMessage);
+    }
+
+    public void handleJsonMessage(WebSocketSession session, JsonNode message){
+
+        message.fieldNames().forEachRemaining(messageKey -> {
 
             try {
-                JsonNode messageContent = jsonMessage.get(messageKey); //message content
+                JsonNode messageContent =  message.get(messageKey); //message content
 
                 VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
                         .handleMessage(session, messageContent);
@@ -84,4 +116,5 @@ public class MocWebSocketMessageHandler extends WebSocketMessageHandler {
             }
         });
     }
+
 }

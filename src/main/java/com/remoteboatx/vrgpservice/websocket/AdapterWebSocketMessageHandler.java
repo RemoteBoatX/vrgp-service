@@ -4,30 +4,34 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.remoteboatx.vrgpservice.VrgpState;
+import com.remoteboatx.vrgpservice.message.AdapterMessageType;
+import com.remoteboatx.vrgpservice.message.VrgpMessageType;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 
 /**
  * WebSocket message handler for handling VRGP messages from the Adapter
  */
-public class AdapterWebSocketMessageHandler extends WebSocketMessageHandler {
+public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
-
-    public AdapterWebSocketMessageHandler() {
-
+    private VrgpWebsocketMessageHandler handler;
+    public AdapterWebSocketMessageHandler(VrgpWebsocketMessageHandler handler) {
+        this.handler = handler;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        super.afterConnectionEstablished(session);
-
-        VrgpState.getInstance().setAdapterSession(session);
 
         System.out.println("Adapter connected");
+        VrgpState.getInstance().setAdapterSessionId(session.getId());
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus){
+
     }
 
     @Override
@@ -35,6 +39,8 @@ public class AdapterWebSocketMessageHandler extends WebSocketMessageHandler {
         JsonNode jsonMessage;
         try {
             jsonMessage = new ObjectMapper().readTree(message.getPayload());
+            handleJsonMessage(session, jsonMessage);
+
 
         } catch (JsonProcessingException e) {
             //TODO handle
@@ -42,25 +48,31 @@ public class AdapterWebSocketMessageHandler extends WebSocketMessageHandler {
             return;
         }
 
-        jsonMessage.fieldNames().forEachRemaining(messageKey -> {
+
+    }
+
+    public void handleJsonMessage(WebSocketSession session, JsonNode message){
+
+        message.fieldNames().forEachRemaining(messageKey -> {
 
             try {
-                JsonNode messageContent = jsonMessage.get(messageKey); //message content
+                JsonNode messageContent =  message.get(messageKey); //message content
 
+
+                System.out.println(messageKey + ": " + messageContent);
                 //TODO this is testing, change to a connect handler method
-                if(messageKey.equals("connect")){
 
 
-                    //TODO check for vessel info
-                    //connect to moc
-                    try {
-                        //TODO change to a dynamic way of retrieving the moc URI
-                        new WebSocketClient(this, URI.create("ws://host.docker.internal:8080/vessel"));
+                //checks if its an adapter message
+                if(AdapterMessageType.contains(messageKey)){
 
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    AdapterMessageType.getByMessageKey(messageKey).getMessageHandler()
+                            .handleMessage(session, messageContent);
+                }else{
+                    VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
+                            .handleMessage(session, messageContent);
                 }
+
 
             }catch (UnsupportedOperationException e){
                 //TODO handle unsupported messages
