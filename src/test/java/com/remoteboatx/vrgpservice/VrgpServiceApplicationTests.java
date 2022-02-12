@@ -1,4 +1,4 @@
-package com.remoteboatx.vrgpservice;
+package main.java.com.remoteboatx.vrgpservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,12 +1,7 @@
-package com.remoteboatx.vrgpservice;
+package main.java.com.remoteboatx.vrgpservice;
 
-import com.remoteboatx.vrgpservice.websocket.MocWebSocketMessageHandler;
-import com.remoteboatx.vrgpservice.websocket.WebSocketClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
 public class VrgpServiceApplication {
@@ -15,6 +10,9 @@ public class VrgpServiceApplication {
 
 		SpringApplication.run(VrgpServiceApplication.class, args);
 
+		
+		
+		/*
 		//TODO testing only, move to a appropriate place later
 		try {
 			//TODO change to an appropriate address or some application property
@@ -23,7 +21,7 @@ public class VrgpServiceApplication {
 		} catch (ExecutionException | InterruptedException e) {
 			e.printStackTrace();
 		}
-
+		*/
 	}
 
 }

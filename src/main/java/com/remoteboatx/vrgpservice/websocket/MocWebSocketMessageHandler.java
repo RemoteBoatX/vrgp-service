@@ -1,66 +1,45 @@
-package com.remoteboatx.vrgpservice.websocket;
+package main.java.com.remoteboatx.vrgpservice.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.message.VrgpMessageType;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.net.http.WebSocket;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * WebSocket message handler for handling VRGP messages from the MOC
- */
+import java.io.IOException;
+import java.lang.Exception;
+
+
 public class MocWebSocketMessageHandler extends TextWebSocketHandler {
 
-    public MocWebSocketMessageHandler() {
-
-    }
+    private final Map<String, WebSocketSession> MocConnections = new HashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
-        System.out.println("Moc connected");
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus)  {
-
+        MocConnections.put(session.getId(),session);
     }
 
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status){
+        MocConnections.remove(session.getId());
+    }
 
-        JsonNode jsonMessage;
-        try {
-            jsonMessage = new ObjectMapper().readTree(message.getPayload());
-
-        } catch (JsonProcessingException e) {
-            //TODO handle
-            e.printStackTrace();
-            return;
+    public void sendMessage(WebSocketSession session, TextMessage message){
+        try{
+            session.sendMessage(message);
         }
-
-        handleJsonMessage(session, jsonMessage);
+        catch(IOException e){
+            e.printStackTrace();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
-
-    public void handleJsonMessage(WebSocketSession session, JsonNode message){
-
-        message.fieldNames().forEachRemaining(messageKey -> {
-
-            try {
-                JsonNode messageContent =  message.get(messageKey); //message content
-
-                VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-                        .handleMessage(session, messageContent);
-
-            }catch (UnsupportedOperationException e){
-                //TODO handle unsupported messages
-                e.printStackTrace();
-            }
-        });
-    }
-
 }
