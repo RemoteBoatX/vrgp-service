@@ -5,7 +5,6 @@ import java.net.URI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.websocket.WebSocketConnection;
 
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -46,6 +45,7 @@ public class CentralWebSocketMessageHandler extends TextWebSocketHandler{
     public void handleTextMessage(WebSocketSession session,TextMessage message){
         SessionType type = connectionTypes.get(session);
 
+        System.out.println(message.getPayload());
         final JsonNode jsonMessage;
         try {
             jsonMessage = new ObjectMapper().readTree(message.getPayload());
@@ -87,7 +87,7 @@ public class CentralWebSocketMessageHandler extends TextWebSocketHandler{
 
     
     public void connectToMoc(String url){
-        WebSocketConnection.MakeConnection(this, URI.create(url));
+        WebSocketConnectionInterface.MakeConnection(this, URI.create(url));
     }
     
 }

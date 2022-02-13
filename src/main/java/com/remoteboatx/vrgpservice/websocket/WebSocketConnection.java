@@ -1,9 +1,11 @@
-package com.remoteboatx.vrgpservice.websocket;
+package main.java.com.remoteboatx.vrgpservice.websocket;
 
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import main.java.com.remoteboatx.vrgpservice.websocket.WebSocketConnectionInterface;
 
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
@@ -14,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * WebSocket client for connecting to WebSockets
  */
-public class WebSocketConnection {
+public class WebSocketConnection implements WebSocketConnectionInterface{
 
     public static void MakeConnection(TextWebSocketHandler messageHandler,URI mocUri){
 

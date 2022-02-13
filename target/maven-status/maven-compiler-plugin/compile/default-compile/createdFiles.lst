@@ -1,8 +1,9 @@
+main/java/com/remoteboatx/vrgpservice/websocket/WebSocketConnectionInterface.class
 main/java/com/remoteboatx/vrgpservice/websocket/CentralWebSocketMessageHandler$SessionType.class
 main/java/com/remoteboatx/vrgpservice/websocket/CentralWebSocketMessageHandler.class
 main/java/com/remoteboatx/vrgpservice/WebSocketConfig.class
+main/java/com/remoteboatx/vrgpservice/websocket/WebSocketConnection.class
 main/java/com/remoteboatx/vrgpservice/websocket/AdapterWebSocketMessageHandler.class
 main/java/com/remoteboatx/vrgpservice/VrgpServiceApplication.class
 main/java/com/remoteboatx/vrgpservice/websocket/VrgpWebSocketMessageHandlerWrapper.class
 main/java/com/remoteboatx/vrgpservice/websocket/MocWebSocketMessageHandler.class
-com/remoteboatx/vrgpservice/websocket/WebSocketConnection.class

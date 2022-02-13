@@ -31,6 +31,7 @@ public class VrgpWebSocketMessageHandlerWrapper extends TextWebSocketHandler{
     public void afterConnectionEstablished(WebSocketSession session) {
         // Pass the connection type to the message handler.
        handler.afterConnectionEstablished(session, type);
+       System.out.println("<-UWU->");
     }
 
     @Override

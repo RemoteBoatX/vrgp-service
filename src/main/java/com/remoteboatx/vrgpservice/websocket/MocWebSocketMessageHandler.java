@@ -23,6 +23,7 @@ public class MocWebSocketMessageHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
         MocConnections.put(session.getId(),session);
+        System.out.println("Connection made");
     }
 
 

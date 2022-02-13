@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: main.java.com.remoteboatx.vrgpservice.VrgpServiceApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.846 s - in main.java.com.remoteboatx.vrgpservice.VrgpServiceApplicationTests
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.99 s - in main.java.com.remoteboatx.vrgpservice.VrgpServiceApplicationTests
