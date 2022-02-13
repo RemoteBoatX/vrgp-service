@@ -1,21 +1,16 @@
-package main.java.com.remoteboatx.vrgpservice.websocket;
-
-import java.net.URI;
+package com.remoteboatx.vrgpservice.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.Map;
+import java.net.URI;
 import java.util.HashMap;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.util.Map;
 
 public class CentralWebSocketMessageHandler extends TextWebSocketHandler{
 
