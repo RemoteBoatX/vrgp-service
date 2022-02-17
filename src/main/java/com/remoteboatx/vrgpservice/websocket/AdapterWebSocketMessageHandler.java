@@ -15,8 +15,6 @@ import java.util.List;
 
 public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
-    protected static WebSocketSession adapterSession;
-
     private static AdapterWebSocketMessageHandler instance;
 
     private final MocRepository mocs = new MocRepository();
@@ -24,6 +22,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     private final List<AdapterMessageHandler<ConnectMessage>> connectMessageHandlers = new ArrayList<>();
 
     private final List<AdapterMessageHandler<ByeMessage>> byeMessageHandlers = new ArrayList<>();
+
+    private WebSocketSession session;
 
     private AdapterWebSocketMessageHandler() {
         registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
@@ -39,12 +39,12 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        adapterSession = session;
+        this.session = session;
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        adapterSession = null;
+        this.session = null;
     }
 
     @Override
