@@ -1,6 +1,7 @@
 package com.remoteboatx.vrgpservice.websocket;
 
 import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
+import com.remoteboatx.vrgpservice.adapter.message.ByeMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
 import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
@@ -22,8 +23,11 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private final List<AdapterMessageHandler<ConnectMessage>> connectMessageHandlers = new ArrayList<>();
 
+    private final List<AdapterMessageHandler<ByeMessage>> byeMessageHandlers = new ArrayList<>();
+
     private AdapterWebSocketMessageHandler() {
         registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
+        registerByeMessageHandler(byeMessage -> mocs.disconnectFromMoc(byeMessage.getUrl()));
     }
 
     public static AdapterWebSocketMessageHandler getInstance() {
@@ -50,7 +54,12 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         if (adapterMessage.getConnect() != null) {
             notifyConnectMessageHandlers(adapterMessage.getConnect());
         }
+        if (adapterMessage.getBye() != null) {
+            notifyByeMessageHandlers(adapterMessage.getBye());
+        }
     }
+
+    // Connect
 
     public void registerConnectMessageHandler(AdapterMessageHandler<ConnectMessage> connectMessageHandler) {
         connectMessageHandlers.add(connectMessageHandler);
@@ -58,5 +67,15 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private void notifyConnectMessageHandlers(ConnectMessage connectMessage) {
         connectMessageHandlers.forEach(connectMessageHandler -> connectMessageHandler.handleMessage(connectMessage));
+    }
+
+    // Bye
+
+    public void registerByeMessageHandler(AdapterMessageHandler<ByeMessage> byeMessageHandler) {
+        byeMessageHandlers.add(byeMessageHandler);
+    }
+
+    private void notifyByeMessageHandlers(ByeMessage byeMessage) {
+        byeMessageHandlers.forEach(byeMessageHandler -> byeMessageHandler.handleMessage(byeMessage));
     }
 }
