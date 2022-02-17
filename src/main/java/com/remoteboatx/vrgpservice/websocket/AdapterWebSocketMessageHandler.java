@@ -1,7 +1,9 @@
 package com.remoteboatx.vrgpservice.websocket;
 
+import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
-import com.remoteboatx.vrgpservice.adapter.message.handler.ConnectMessageHandler;
+import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
+import com.remoteboatx.vrgpservice.util.JsonUtil;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -16,9 +18,12 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private static AdapterWebSocketMessageHandler instance;
 
-    private final List<ConnectMessageHandler> connectMessageHandlers = new ArrayList<>();
+    private final MocRepository mocs = new MocRepository();
+
+    private final List<AdapterMessageHandler<ConnectMessage>> connectMessageHandlers = new ArrayList<>();
 
     private AdapterWebSocketMessageHandler() {
+        registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
     }
 
     public static AdapterWebSocketMessageHandler getInstance() {
@@ -39,12 +44,15 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         // TODO: Implement.
-        super.handleTextMessage(session, message);
+        final AdapterMessage adapterMessage = JsonUtil.fromJson(message.getPayload(), AdapterMessage.class);
+        if (adapterMessage.getConnect() != null) {
+            notifyConnectMessageHandlers(adapterMessage.getConnect());
+        }
     }
 
-    public void registerConnectMessageHandler(ConnectMessageHandler connectMessageHandler) {
+    public void registerConnectMessageHandler(AdapterMessageHandler<ConnectMessage> connectMessageHandler) {
         connectMessageHandlers.add(connectMessageHandler);
     }
 

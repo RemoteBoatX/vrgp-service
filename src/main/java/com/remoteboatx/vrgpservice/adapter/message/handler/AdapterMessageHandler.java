@@ -1,8 +1,9 @@
 package com.remoteboatx.vrgpservice.adapter.message.handler;
 
-import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
+import com.remoteboatx.vrgpservice.adapter.message.AdapterSingleMessage;
 
-public interface AdapterMessageHandler<T extends AdapterMessage> {
+@FunctionalInterface
+public interface AdapterMessageHandler<T extends AdapterSingleMessage> {
 
     void handleMessage(T message);
 }

@@ -1,4 +1,13 @@
 package com.remoteboatx.vrgpservice.adapter.message;
 
-public class ConnectMessage implements AdapterMessage {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class ConnectMessage implements AdapterSingleMessage {
+
+    @JsonProperty(required = true)
+    private String url;
+
+    public String getUrl() {
+        return url;
+    }
 }
