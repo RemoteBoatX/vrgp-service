@@ -14,7 +14,6 @@ public class VrgpServiceApplication {
 
         SpringApplication.run(VrgpServiceApplication.class, args);
 
-
         //TODO testing only, move to a appropriate place later
         //WebSocketConnection.MakeConnection(new CentralWebSocketMessageHandler(),URI.create("ws://host.docker.internal:8080/vessel") );
         String URL = "ws://localhost:8081/vessel";

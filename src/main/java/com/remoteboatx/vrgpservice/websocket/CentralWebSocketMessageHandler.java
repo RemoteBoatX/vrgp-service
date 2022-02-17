@@ -12,14 +12,14 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CentralWebSocketMessageHandler extends TextWebSocketHandler{
+public class CentralWebSocketMessageHandler extends TextWebSocketHandler {
 
-    private AdapterWebSocketMessageHandler adapterHandler  = new AdapterWebSocketMessageHandler();
-    private MocWebSocketMessageHandler     mocHandler      = new MocWebSocketMessageHandler();
+    private AdapterWebSocketMessageHandler adapterHandler = AdapterWebSocketMessageHandler.getInstance();
+    private MocWebSocketMessageHandler mocHandler = new MocWebSocketMessageHandler();
 
     private final Map<WebSocketSession, SessionType> connectionTypes = new HashMap<>();
-    
-    public enum SessionType{
+
+    public enum SessionType {
         MOC, ADAPTER
     }
 
