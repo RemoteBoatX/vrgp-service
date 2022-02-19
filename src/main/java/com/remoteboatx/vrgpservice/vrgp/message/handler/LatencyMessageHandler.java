@@ -35,6 +35,7 @@ public class LatencyMessageHandler implements VrgpSingleMessageHandler<LatencyMe
 
         final LatencyMessage reply = new LatencyMessage().withSent(sent).withReceived(now);
         // TODO: Send reply.
+        mocWebSocket.sendMessage(new VrgpMessage().withTime(reply).toJson());
     }
 
     @Override

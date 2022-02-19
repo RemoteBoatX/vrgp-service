@@ -27,6 +27,7 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private AdapterWebSocketMessageHandler() {
         registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
+        // TODO: Forward bye message and do not close connection here. MOC closes connection on bye message.
         registerByeMessageHandler(byeMessage -> mocs.disconnectFromMoc(byeMessage.getUrl()));
     }
 
