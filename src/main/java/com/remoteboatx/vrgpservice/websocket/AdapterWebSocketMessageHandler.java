@@ -5,6 +5,7 @@ import com.remoteboatx.vrgpservice.adapter.message.ByeMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
 import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
+import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -27,8 +28,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private AdapterWebSocketMessageHandler() {
         registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
-        // TODO: Forward bye message and do not close connection here. MOC closes connection on bye message.
-        registerByeMessageHandler(byeMessage -> mocs.disconnectFromMoc(byeMessage.getUrl()));
+
+        registerByeMessageHandler(byeMessage -> mocs.sendMessageToMoc(byeMessage.getUrl(), new VrgpMessage().withBye()));
     }
 
     public static AdapterWebSocketMessageHandler getInstance() {
