@@ -3,14 +3,17 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ByeMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
+import com.remoteboatx.vrgpservice.adapter.message.RequestMessageObserver;
 import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
+import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +27,19 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private final List<AdapterMessageHandler<ByeMessage>> byeMessageHandlers = new ArrayList<>();
 
+    private RequestMessageObserver<VesselInformation> requestVesselInfoMessageObserver;
+    private VesselInformation vesselInformation;
+
     private WebSocketSession session;
 
     private AdapterWebSocketMessageHandler() {
-        registerConnectMessageHandler(connectMessage -> mocs.connectToMoc(connectMessage.getUrl()));
+        registerConnectMessageHandler(connectMessage -> {
+            mocs.connectToMoc(connectMessage.getUrl());
+            //TODO send vessel info
+        });
 
         registerByeMessageHandler(byeMessage -> mocs.sendMessageToMoc(byeMessage.getUrl(), new VrgpMessage().withBye()));
+
     }
 
     public static AdapterWebSocketMessageHandler getInstance() {
@@ -42,6 +52,14 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         this.session = session;
+        //request info
+
+        registerRequestVesselInfoObserver(data -> {
+            //store the data somewhere
+            vesselInformation = data;
+            System.out.println(JsonUtil.toJsonString(data));
+        });
+
     }
 
     @Override
@@ -58,6 +76,9 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         }
         if (adapterMessage.getBye() != null) {
             notifyByeMessageHandlers(adapterMessage.getBye());
+        }
+        if(adapterMessage.getVesselInformation() != null){
+            notifyRequestVesselInfoObserver(adapterMessage.getVesselInformation());
         }
     }
 
@@ -80,4 +101,21 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     private void notifyByeMessageHandlers(ByeMessage byeMessage) {
         byeMessageHandlers.forEach(byeMessageHandler -> byeMessageHandler.handleMessage(byeMessage));
     }
+
+
+    //vessel info
+    private void registerRequestVesselInfoObserver(RequestMessageObserver<VesselInformation> observer){
+        requestVesselInfoMessageObserver = observer;
+        try {
+            //TODO create request format
+            session.sendMessage(new TextMessage("request vessel info"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void notifyRequestVesselInfoObserver(VesselInformation vesselInformation){
+        requestVesselInfoMessageObserver.update(vesselInformation);
+    }
+
 }

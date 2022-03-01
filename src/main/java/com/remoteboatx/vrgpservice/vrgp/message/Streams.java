@@ -7,15 +7,15 @@ package com.remoteboatx.vrgpservice.vrgp.message;
 public class Streams {
 
     // TODO: Refactor to actual datatypes.
-    private boolean conning;
+    private Boolean conning;
 
-    private boolean camera;
+    private Boolean camera;
 
-    public boolean getConning() {
+    public Boolean getConning() {
         return conning;
     }
 
-    public boolean getCamera() {
+    public Boolean getCamera() {
         return camera;
     }
 }
