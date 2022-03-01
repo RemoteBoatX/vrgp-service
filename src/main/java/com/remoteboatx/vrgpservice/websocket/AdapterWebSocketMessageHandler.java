@@ -8,6 +8,7 @@ import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler
 import com.remoteboatx.vrgpservice.util.JsonUtil;
 import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
+import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -29,6 +30,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private RequestMessageObserver<VesselInformation> requestVesselInfoMessageObserver;
     private VesselInformation vesselInformation;
+
+    private List<RequestMessageObserver<Conning>> requestConningMessageObservers = new ArrayList<>();
 
     private WebSocketSession session;
 
@@ -116,6 +119,24 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private void notifyRequestVesselInfoObserver(VesselInformation vesselInformation){
         requestVesselInfoMessageObserver.update(vesselInformation);
+    }
+
+
+    public void registerRequestConningMessageHandler( RequestMessageObserver<Conning> observer, String message) {
+        requestConningMessageObservers.add(observer);
+
+        System.out.println(message);
+        try {
+            session.sendMessage(new TextMessage(message));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void notifyRequestConningMessageHandlers(Conning conning) {
+        requestConningMessageObservers.forEach(observer -> observer.update(conning));
     }
 
 }
