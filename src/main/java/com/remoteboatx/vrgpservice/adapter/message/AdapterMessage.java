@@ -3,6 +3,7 @@ package com.remoteboatx.vrgpservice.adapter.message;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
+import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
 
 public class AdapterMessage {
 
@@ -16,6 +17,9 @@ public class AdapterMessage {
     @JsonProperty("vessel")
     private VesselInformation vessel;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Conning conning;
+
     public ConnectMessage getConnect() {
         return connect;
     }
@@ -26,5 +30,9 @@ public class AdapterMessage {
 
     public VesselInformation getVesselInformation() {
         return vessel;
+    }
+
+    public Conning getConning() {
+        return conning;
     }
 }

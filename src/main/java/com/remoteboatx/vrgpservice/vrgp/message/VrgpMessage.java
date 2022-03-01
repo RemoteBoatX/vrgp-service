@@ -92,6 +92,23 @@ public class VrgpMessage {
         return this;
     }
 
+    /**
+     * Adds a conning message to this VrgpMessage.
+     */
+    public VrgpMessage withConning(@NonNull Conning conningMessage){
+        conning = conningMessage;
+        return this;
+    }
+
+    /**
+     * Adds a vessel message to this VrgpMessage.
+     */
+    public VrgpMessage withVessel(@NonNull VesselInformation vesselMessage){
+        vessel = vesselMessage;
+        return this;
+    }
+
+
     public Status getEmergency() {
         return emergency;
     }

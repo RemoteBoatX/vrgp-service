@@ -1,9 +1,14 @@
 package com.remoteboatx.vrgpservice.websocket;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.remoteboatx.vrgpservice.util.JsonUtil;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.handler.ByeMessageHandler;
 import com.remoteboatx.vrgpservice.vrgp.message.handler.LatencyMessageHandler;
 import com.remoteboatx.vrgpservice.vrgp.message.handler.VrgpSingleMessageHandler;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
@@ -25,6 +30,8 @@ public class MocWebSocketConnection extends TextWebSocketHandler implements MocW
         add(new ByeMessageHandler());
     }};
 
+
+
     private WebSocketSession session;
 
     public MocWebSocketConnection(String url) {
@@ -38,10 +45,40 @@ public class MocWebSocketConnection extends TextWebSocketHandler implements MocW
     }
 
     @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("moc disconnected");
+    }
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        System.out.println("moc connected");
+    }
+
+    @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        for (VrgpSingleMessageHandler<?> singleMessageHandler : singleMessageHandlers) {
-            singleMessageHandler.handleMessage(VrgpMessage.fromJson(message.getPayload()), this);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode payload = mapper.readTree(message.getPayload());
+
+        if(payload.has("request")){
+            JsonNode request = payload.get("request");
+
+            ArrayList<JsonNode> nodes = new ArrayList<>();
+
+            request.fieldNames().forEachRemaining(key -> {
+                ObjectNode parentNode = mapper.createObjectNode();
+                nodes.add(parentNode.set(key, request.get(key)));
+            });
+
+            handleRequestMessages(nodes);
+
+        }else{
+            for (VrgpSingleMessageHandler<?> singleMessageHandler : singleMessageHandlers) {
+                singleMessageHandler.handleMessage(VrgpMessage.fromJson(message.getPayload()), this);
+            }
         }
+
+
     }
 
     @Override
@@ -51,6 +88,25 @@ public class MocWebSocketConnection extends TextWebSocketHandler implements MocW
         } catch (IOException e) {
             // TODO: Handle exception.
             e.printStackTrace();
+        }
+    }
+
+    private void handleRequestMessages(List<JsonNode> values){
+
+        for (JsonNode value: values) {
+
+            if(value.has("conning")){
+
+                String conningRequestMessage = String.format("{\"request\": %s }", JsonUtil.toJsonString(value));
+
+                AdapterWebSocketMessageHandler.getInstance()
+                        .registerRequestConningMessageHandler(conning -> {
+                            System.out.println("sending conning");
+
+                            VrgpMessage conningMessage = new VrgpMessage().withConning(conning);
+                            sendMessage(conningMessage.toJson());
+                        }, conningRequestMessage);
+            }
         }
     }
 
