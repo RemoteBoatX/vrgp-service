@@ -37,8 +37,22 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
     private AdapterWebSocketMessageHandler() {
         registerConnectMessageHandler(connectMessage -> {
-            mocs.connectToMoc(connectMessage.getUrl());
-            //TODO send vessel info
+            String mocUrl = connectMessage.getUrl();
+
+            if(vesselInformation != null) {
+                VrgpMessage vesselInfoMessage = new VrgpMessage().withVessel(vesselInformation);
+                mocs.connectToMoc(mocUrl);
+//                mocs.sendMessageToMoc(mocUrl, vesselInfoMessage); //not handled fully on moc side, causes errors
+            }
+            else{
+                //re-request the vessel info
+                registerRequestVesselInfoObserver(data -> {
+
+                    vesselInformation = data;
+                    System.out.println(JsonUtil.toJsonString(data));
+                });
+                //TODO handle, maybe send a error message to the adapter?
+            }
         });
 
         registerByeMessageHandler(byeMessage -> mocs.sendMessageToMoc(byeMessage.getUrl(), new VrgpMessage().withBye()));
@@ -113,7 +127,7 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         requestVesselInfoMessageObserver = observer;
         try {
             //TODO create request format
-            session.sendMessage(new TextMessage("request vessel info"));
+            session.sendMessage(new TextMessage("{\"request\":\"vessel information\"}"));
         } catch (IOException e) {
             e.printStackTrace();
         }
