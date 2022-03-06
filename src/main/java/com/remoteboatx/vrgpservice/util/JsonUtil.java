@@ -41,6 +41,20 @@ public class JsonUtil {
     }
 
     /**
+     * Serializes a String to JSON.
+     *
+     */
+    @NonNull
+    public static JsonNode toJson(String content){
+        try {
+            return getObjectMapper().readTree(content);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+
+    /**
      * Serializes an object to JSON.
      *
      * @see ObjectMapper#valueToTree(Object)

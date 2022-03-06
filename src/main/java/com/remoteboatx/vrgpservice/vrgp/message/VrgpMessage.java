@@ -44,6 +44,9 @@ public class VrgpMessage {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private ByeMessage bye;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private RequestMessage request;
+
     /**
      * Deserializes a JSON string to a VrgpMessage object.
      */
@@ -131,6 +134,15 @@ public class VrgpMessage {
 
     public Status getDebug() {
         return debug;
+    }
+
+    public RequestMessage getRequest() {
+        return request;
+    }
+
+    public VrgpMessage withRequest(@NonNull RequestMessage requestMessage){
+        request = requestMessage;
+        return this;
     }
 
     private void putStatusMessageToMapIfNotNull(Status.Type type, Status status,
