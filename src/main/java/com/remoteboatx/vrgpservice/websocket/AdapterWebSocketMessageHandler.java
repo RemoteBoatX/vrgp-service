@@ -6,6 +6,7 @@ import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
 import com.remoteboatx.vrgpservice.adapter.message.RequestMessageObserver;
 import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
+import com.remoteboatx.vrgpservice.vrgp.message.RequestMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
@@ -17,6 +18,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
@@ -39,17 +42,15 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         registerConnectMessageHandler(connectMessage -> {
             String mocUrl = connectMessage.getUrl();
 
-            if(vesselInformation != null) {
+            if(vesselInformation != null){
                 VrgpMessage vesselInfoMessage = new VrgpMessage().withVessel(vesselInformation);
                 mocs.connectToMoc(mocUrl);
-//                mocs.sendMessageToMoc(mocUrl, vesselInfoMessage); //not handled fully on moc side, causes errors
+                mocs.sendMessageToMoc(mocUrl, vesselInfoMessage);
             }
             else{
                 //re-request the vessel info
                 registerRequestVesselInfoObserver(data -> {
-
                     vesselInformation = data;
-                    System.out.println(JsonUtil.toJsonString(data));
                 });
                 //TODO handle, maybe send a error message to the adapter?
             }
@@ -72,7 +73,6 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         //request info
         registerRequestVesselInfoObserver(data -> {
             vesselInformation = data;
-            System.out.println(JsonUtil.toJsonString(data));
         });
 
     }
@@ -92,8 +92,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
         if (adapterMessage.getBye() != null) {
             notifyByeMessageHandlers(adapterMessage.getBye());
         }
-        if(adapterMessage.getVesselInformation() != null){
-            notifyRequestVesselInfoObserver(adapterMessage.getVesselInformation());
+        if(adapterMessage.getVessel() != null){
+            notifyRequestVesselInfoObserver(adapterMessage.getVessel());
         }
 
         if(adapterMessage.getConning() != null){
@@ -126,8 +126,10 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     private void registerRequestVesselInfoObserver(RequestMessageObserver<VesselInformation> observer){
         requestVesselInfoMessageObserver = observer;
         try {
-            //TODO create request format
-            session.sendMessage(new TextMessage("{\"request\":\"vessel information\"}"));
+            AdapterMessage request = new AdapterMessage().withRequest(new RequestMessage()
+                    .withVessel());
+            System.out.println(request.toJson());
+            session.sendMessage(new TextMessage(request.toJson()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -138,13 +140,19 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     }
 
 
-    public void registerRequestConningMessageHandler( RequestMessageObserver<Conning> observer, String message) {
+    public void registerRequestConningMessageHandler( RequestMessageObserver<Conning> observer, RequestMessage requestMessage) {
         requestConningMessageObservers.add(observer);
 
-        try {
-            session.sendMessage(new TextMessage(message)); //forwards the request to the adapter
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(requestConningMessageObservers.size() == 1){
+
+            Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> {
+                try {
+                    session.sendMessage(new TextMessage(JsonUtil.toJsonString(requestMessage))); //forwards the request to the adapter
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // send request immediately and then every five seconds.
+            }, 0, 5, TimeUnit.SECONDS); //TODO not sure how often it should send the conning
         }
 
     }

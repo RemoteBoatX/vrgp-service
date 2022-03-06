@@ -1,9 +1,7 @@
 package com.remoteboatx.vrgpservice.websocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
+import com.remoteboatx.vrgpservice.vrgp.message.RequestMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.handler.ByeMessageHandler;
 import com.remoteboatx.vrgpservice.vrgp.message.handler.LatencyMessageHandler;
@@ -56,21 +54,10 @@ public class MocWebSocketConnection extends TextWebSocketHandler implements MocW
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        VrgpMessage vrgpMessage = JsonUtil.fromJson(message.getPayload(), VrgpMessage.class);
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode payload = mapper.readTree(message.getPayload());
-
-        if(payload.has("request")){
-            JsonNode request = payload.get("request");
-
-            ArrayList<JsonNode> nodes = new ArrayList<>();
-
-            request.fieldNames().forEachRemaining(key -> {
-                ObjectNode parentNode = mapper.createObjectNode();
-                nodes.add(parentNode.set(key, request.get(key)));
-            });
-
-            handleRequestMessages(nodes);
+        if(vrgpMessage.getRequest() != null){
+            handleRequestMessage(vrgpMessage.getRequest());
 
         }else{
             for (VrgpSingleMessageHandler<?> singleMessageHandler : singleMessageHandlers) {
@@ -91,23 +78,20 @@ public class MocWebSocketConnection extends TextWebSocketHandler implements MocW
         }
     }
 
-    private void handleRequestMessages(List<JsonNode> values){
+    private void handleRequestMessage(RequestMessage requestMessage){
 
-        for (JsonNode value: values) {
+        if(requestMessage.getConning() != null){
 
-            if(value.has("conning")){
+            AdapterWebSocketMessageHandler.getInstance()
+                    .registerRequestConningMessageHandler(conning -> {
+                        System.out.println("sending conning");
 
-                String conningRequestMessage = String.format("{\"request\": %s }", JsonUtil.toJsonString(value));
-
-                AdapterWebSocketMessageHandler.getInstance()
-                        .registerRequestConningMessageHandler(conning -> {
-                            System.out.println("sending conning");
-
-                            VrgpMessage conningMessage = new VrgpMessage().withConning(conning);
-                            sendMessage(conningMessage.toJson());
-                        }, conningRequestMessage);
-            }
+                        VrgpMessage conningMessage = new VrgpMessage().withConning(conning);
+                        sendMessage(conningMessage.toJson());
+                    }, new RequestMessage().withConning(requestMessage.getConning()));
         }
+
+        //TODO add more streams
     }
 
     @Override
