@@ -2,6 +2,7 @@ package com.remoteboatx.vrgpservice.adapter.message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.remoteboatx.vrgpservice.vrgp.message.RequestMessage;
+import com.remoteboatx.vrgpservice.vrgp.message.Status;
 import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
@@ -24,6 +25,48 @@ public class AdapterMessage {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private RequestMessage request;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status emergency;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status alarm;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status warning;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status caution;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status info;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Status debug;
+
+    public Status getEmergency() {
+        return emergency;
+    }
+
+    public Status getAlarm() {
+        return alarm;
+    }
+
+    public Status getWarning() {
+        return warning;
+    }
+
+    public Status getCaution() {
+        return caution;
+    }
+
+    public Status getInfo() {
+        return info;
+    }
+
+    public Status getDebug() {
+        return debug;
+    }
 
     public ConnectMessage getConnect() {
         return connect;

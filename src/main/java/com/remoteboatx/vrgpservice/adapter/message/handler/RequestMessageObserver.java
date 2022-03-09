@@ -1,4 +1,4 @@
-package com.remoteboatx.vrgpservice.adapter.message;
+package com.remoteboatx.vrgpservice.adapter.message.handler;
 
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpSingleMessage;
 

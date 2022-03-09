@@ -111,6 +111,26 @@ public class VrgpMessage {
         return this;
     }
 
+    public VrgpMessage withStatus(@NonNull Status statusMessage, String type){
+
+        switch (Status.Type.valueOf(type.toUpperCase())){
+            case EMERGENCY: emergency = statusMessage;
+                break;
+            case ALARM: alarm = statusMessage;
+                break;
+            case WARNING: warning = statusMessage;
+                break;
+            case CAUTION: caution = statusMessage;
+                break;
+            case INFO: info = statusMessage;
+                break;
+            case DEBUG: debug = statusMessage;
+                break;
+        }
+
+        return this;
+    }
+
 
     public Status getEmergency() {
         return emergency;

@@ -26,4 +26,8 @@ public class MocRepository {
         final String message = JsonUtil.toJsonString(msg);
         moc.sendMessage(message);
     }
+
+    public void sendMessageToAllMocs(VrgpMessage msg){
+        mocs.forEach((s, moc) -> moc.sendMessage(msg.toJson()));
+    }
 }

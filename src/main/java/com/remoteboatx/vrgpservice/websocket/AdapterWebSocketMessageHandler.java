@@ -3,10 +3,12 @@ package com.remoteboatx.vrgpservice.websocket;
 import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ByeMessage;
 import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
-import com.remoteboatx.vrgpservice.adapter.message.RequestMessageObserver;
 import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
+import com.remoteboatx.vrgpservice.adapter.message.handler.RequestMessageObserver;
+import com.remoteboatx.vrgpservice.adapter.message.handler.VrgpMessageHandler;
 import com.remoteboatx.vrgpservice.util.JsonUtil;
 import com.remoteboatx.vrgpservice.vrgp.message.RequestMessage;
+import com.remoteboatx.vrgpservice.vrgp.message.Status;
 import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
 import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
 import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
@@ -30,6 +32,8 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
     private final List<AdapterMessageHandler<ConnectMessage>> connectMessageHandlers = new ArrayList<>();
 
     private final List<AdapterMessageHandler<ByeMessage>> byeMessageHandlers = new ArrayList<>();
+
+    private VrgpMessageHandler<Status> statusMessageHandler;
 
     private RequestMessageObserver<VesselInformation> requestVesselInfoMessageObserver;
     private VesselInformation vesselInformation;
@@ -58,6 +62,10 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
         registerByeMessageHandler(byeMessage -> mocs.sendMessageToMoc(byeMessage.getUrl(), new VrgpMessage().withBye()));
 
+        statusMessageHandler = status -> {
+            String type = status.getType();
+            mocs.sendMessageToAllMocs(new VrgpMessage().withStatus(status, type));
+        };
     }
 
     public static AdapterWebSocketMessageHandler getInstance() {
@@ -98,6 +106,29 @@ public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
         if(adapterMessage.getConning() != null){
             notifyRequestConningMessageHandlers(adapterMessage.getConning());
+        }
+
+        if(adapterMessage.getInfo() != null){
+            statusMessageHandler.handle(adapterMessage.getInfo().withType(Status.Type.INFO));
+        }
+
+        if(adapterMessage.getCaution() != null){
+            statusMessageHandler.handle(adapterMessage.getCaution().withType(Status.Type.CAUTION));
+        }
+
+        if(adapterMessage.getEmergency() != null){
+            statusMessageHandler.handle(adapterMessage.getEmergency().withType(Status.Type.EMERGENCY));
+        }
+
+        if(adapterMessage.getAlarm() != null){
+            statusMessageHandler.handle(adapterMessage.getAlarm().withType(Status.Type.ALARM));
+        }
+        if(adapterMessage.getWarning() != null){
+            statusMessageHandler.handle(adapterMessage.getWarning().withType(Status.Type.WARNING));
+        }
+
+        if(adapterMessage.getDebug() != null){
+            statusMessageHandler.handle(adapterMessage.getDebug().withType(Status.Type.DEBUG));
         }
     }
 
