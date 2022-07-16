@@ -1,0 +1,7 @@
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/VrgpServiceApplication.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/websocket/CentralWebSocketMessageHandler.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/websocket/WebSocketConnection.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/websocket/AdapterWebSocketMessageHandler.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/websocket/VrgpWebSocketMessageHandlerWrapper.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/websocket/MocWebSocketHandler.java
+/home/daniel/Escritorio/VRGP/vrgp-service/src/main/java/com/remoteboatx/vrgpservice/WebSocketConfig.java

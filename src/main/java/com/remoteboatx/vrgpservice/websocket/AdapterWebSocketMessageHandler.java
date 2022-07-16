@@ -1,88 +1,164 @@
 package com.remoteboatx.vrgpservice.websocket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.remoteboatx.vrgpservice.message.VrgpMessageType;
+import com.remoteboatx.vrgpservice.adapter.message.AdapterMessage;
+import com.remoteboatx.vrgpservice.adapter.message.ByeMessage;
+import com.remoteboatx.vrgpservice.adapter.message.ConnectMessage;
+import com.remoteboatx.vrgpservice.adapter.message.RequestMessageObserver;
+import com.remoteboatx.vrgpservice.adapter.message.handler.AdapterMessageHandler;
+import com.remoteboatx.vrgpservice.util.JsonUtil;
+import com.remoteboatx.vrgpservice.vrgp.message.RequestMessage;
+import com.remoteboatx.vrgpservice.vrgp.message.VesselInformation;
+import com.remoteboatx.vrgpservice.vrgp.message.VrgpMessage;
+import com.remoteboatx.vrgpservice.vrgp.message.stream.Conning;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-
-/**
- * WebSocket message handler for handling VRGP messages from the Adapter
- */
 public class AdapterWebSocketMessageHandler extends TextWebSocketHandler {
 
-    VrgpWebsocketMessageHandler handler;
-    public AdapterWebSocketMessageHandler(VrgpWebsocketMessageHandler handler) {
-        this.handler = handler;
+    private static AdapterWebSocketMessageHandler instance;
+
+    private final MocRepository mocs = new MocRepository();
+
+    private final List<AdapterMessageHandler<ConnectMessage>> connectMessageHandlers = new ArrayList<>();
+
+    private final List<AdapterMessageHandler<ByeMessage>> byeMessageHandlers = new ArrayList<>();
+
+    private RequestMessageObserver<VesselInformation> requestVesselInfoMessageObserver;
+    private VesselInformation vesselInformation;
+
+    private List<RequestMessageObserver<Conning>> requestConningMessageObservers = new ArrayList<>();
+
+    private WebSocketSession session;
+
+    private AdapterWebSocketMessageHandler() {
+        registerConnectMessageHandler(connectMessage -> {
+            String mocUrl = connectMessage.getUrl();
+
+            if(vesselInformation != null){
+                VrgpMessage vesselInfoMessage = new VrgpMessage().withVessel(vesselInformation);
+                mocs.connectToMoc(mocUrl);
+                mocs.sendMessageToMoc(mocUrl, vesselInfoMessage);
+            }
+            else{
+                //re-request the vessel info
+                registerRequestVesselInfoObserver(data -> {
+                    vesselInformation = data;
+                });
+                //TODO handle, maybe send a error message to the adapter?
+            }
+        });
+
+        registerByeMessageHandler(byeMessage -> mocs.sendMessageToMoc(byeMessage.getUrl(), new VrgpMessage().withBye()));
+
+    }
+
+    public static AdapterWebSocketMessageHandler getInstance() {
+        if (instance == null) {
+            instance = new AdapterWebSocketMessageHandler();
+        }
+        return instance;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        System.out.println("Adapter connected");
+        this.session = session;
+        //request info
+        registerRequestVesselInfoObserver(data -> {
+            vesselInformation = data;
+        });
+
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        this.session = null;
     }
 
     @Override
-    public void handleTextMessage(WebSocketSession session, TextMessage message) {
-        JsonNode jsonMessage;
-        try {
-            jsonMessage = new ObjectMapper().readTree(message.getPayload());
-            handleJsonMessage(session, jsonMessage);
-
-
-        } catch (JsonProcessingException e) {
-            //TODO handle
-            e.printStackTrace();
-            return;
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+        // TODO: Implement.
+        final AdapterMessage adapterMessage = JsonUtil.fromJson(message.getPayload(), AdapterMessage.class);
+        if (adapterMessage.getConnect() != null) {
+            notifyConnectMessageHandlers(adapterMessage.getConnect());
+        }
+        if (adapterMessage.getBye() != null) {
+            notifyByeMessageHandlers(adapterMessage.getBye());
+        }
+        if(adapterMessage.getVessel() != null){
+            notifyRequestVesselInfoObserver(adapterMessage.getVessel());
         }
 
-
+        if(adapterMessage.getConning() != null){
+            notifyRequestConningMessageHandlers(adapterMessage.getConning());
+        }
     }
 
-    public void handleJsonMessage(WebSocketSession session, JsonNode message){
+    // Connect
 
-        message.fieldNames().forEachRemaining(messageKey -> {
+    public void registerConnectMessageHandler(AdapterMessageHandler<ConnectMessage> connectMessageHandler) {
+        connectMessageHandlers.add(connectMessageHandler);
+    }
 
-            try {
-                JsonNode messageContent =  message.get(messageKey); //message content
+    private void notifyConnectMessageHandlers(ConnectMessage connectMessage) {
+        connectMessageHandlers.forEach(connectMessageHandler -> connectMessageHandler.handleMessage(connectMessage));
+    }
+
+    // Bye
+
+    public void registerByeMessageHandler(AdapterMessageHandler<ByeMessage> byeMessageHandler) {
+        byeMessageHandlers.add(byeMessageHandler);
+    }
+
+    private void notifyByeMessageHandlers(ByeMessage byeMessage) {
+        byeMessageHandlers.forEach(byeMessageHandler -> byeMessageHandler.handleMessage(byeMessage));
+    }
 
 
-                System.out.println(messageKey + ": " + messageContent);
-                //TODO this is testing, change to a connect handler method
-                if(messageKey.equals("connect")){
+    //vessel info
+    private void registerRequestVesselInfoObserver(RequestMessageObserver<VesselInformation> observer){
+        requestVesselInfoMessageObserver = observer;
+        try {
+            AdapterMessage request = new AdapterMessage().withRequest(new RequestMessage()
+                    .withVessel());
+            System.out.println(request.toJson());
+            session.sendMessage(new TextMessage(request.toJson()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-                    //connect to moc
-                    try {
-                        //TODO change to a dynamic way of retrieving the moc URI
-                        WebSocketClient moc =  new WebSocketClient(handler.getMocWebSocketMessageHandler(),
-                                URI.create("ws://host.docker.internal:8080/vessel"));
-                        handler.addSession(new VrgpWebSocketSession(VrgpWebSocketSession.SessionType.MOC,
-                                moc.getSession()));
+    private void notifyRequestVesselInfoObserver(VesselInformation vesselInformation){
+        requestVesselInfoMessageObserver.update(vesselInformation);
+    }
 
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }else{
-                        VrgpMessageType.getByMessageKey(messageKey).getMessageHandler()
-                        .handleMessage(session, messageContent);
+
+    public void registerRequestConningMessageHandler( RequestMessageObserver<Conning> observer, RequestMessage requestMessage) {
+        requestConningMessageObservers.add(observer);
+
+        if(requestConningMessageObservers.size() == 1){
+
+            Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(() -> {
+                try {
+                    session.sendMessage(new TextMessage(JsonUtil.toJsonString(requestMessage))); //forwards the request to the adapter
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                // send request immediately and then every five seconds.
+            }, 0, 5, TimeUnit.SECONDS); //TODO not sure how often it should send the conning
+        }
 
-
-            }catch (UnsupportedOperationException e){
-                //TODO handle unsupported messages
-                e.printStackTrace();
-            }
-        });
     }
+
+    private void notifyRequestConningMessageHandlers(Conning conning) {
+        requestConningMessageObservers.forEach(observer -> observer.update(conning));
+    }
+
 }
